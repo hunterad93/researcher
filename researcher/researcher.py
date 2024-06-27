@@ -2,6 +2,8 @@ import re
 import streamlit as st
 import requests
 # import anthropic
+from openai import OpenAI
+
 
 def send_perplexity_message(message, conversation_history, model="llama-3-sonar-large-32k-online", system_prompt=""):
     url = "https://api.perplexity.ai/chat/completions"
@@ -58,7 +60,7 @@ def research_topic(main_topic, max_subtopics=10):
     
     # Step 5: Generate summary
     summary_prompt = "Summarize the given information concisely. Focus on key points and maintain a neutral, academic tone."
-    summary = generate_summary(detailed_research, summary_prompt)
+    summary = generate_summary_openai(detailed_research, summary_prompt)
     summary_markdown = create_summary_markdown(main_topic, summary)
     
     return markdown_doc, summary_markdown
@@ -95,6 +97,25 @@ def generate_summary(research_data, summary_prompt):
 #     )
     
 #     return message.content
+
+def generate_summary_openai(research_data, summary_prompt):
+
+    client = OpenAI(api_key=st.secrets['OPENAI_API_KEY'])
+    
+    summary_request = "Summarize the following research information concisely:\n\n" + "\n\n".join(research_data)
+    
+    response = client.chat.completions.create(
+        model="gpt-4-turbo-2024-04-09",
+        messages=[
+            {"role": "system", "content": summary_prompt},
+            {"role": "user", "content": summary_request}
+        ],
+        max_tokens=1000,
+        temperature=0.7
+    )
+    
+    return response.choices[0].message.content
+
 
 def create_summary_markdown(topic, summary):
     return f"# Summary of Research on {topic}\n\n{summary}"
