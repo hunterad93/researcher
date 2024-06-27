@@ -1,6 +1,7 @@
 import re
 import streamlit as st
 import requests
+# import anthropic
 
 def send_perplexity_message(message, conversation_history, model="llama-3-sonar-large-32k-online", system_prompt=""):
     url = "https://api.perplexity.ai/chat/completions"
@@ -38,7 +39,7 @@ def extract_subtopics(text):
 
 def research_topic(main_topic, max_subtopics=10):
     conversation_history = []
-    research_prompt = "Try to be specific in your responses. Provide detailed information with citations. Conclude your response with a list of URLs used from your search."
+    research_prompt = "Try to be specific in your responses. Conclude your response with a list of URLs used from your search."
     
     # Step 1: Get overview
     overview = send_perplexity_message(f"Provide an overview of {main_topic} with a numbered list of subtopics.", conversation_history, system_prompt=research_prompt)
@@ -78,6 +79,23 @@ def generate_summary(research_data, summary_prompt):
     summary = send_perplexity_message(summary_request, [], model="llama-3-sonar-large-32k-chat", system_prompt=summary_prompt)
     return summary
 
+# def generate_summary_claude(research_data, summary_prompt):
+#     client = anthropic.Anthropic(api_key=st.secrets['ANTHROPIC_API_KEY'])
+    
+#     summary_request = "Summarize the following research information concisely:\n\n" + "\n\n".join(research_data)
+    
+#     message = client.messages.create(
+#         model="claude-3-sonnet-20240229",
+#         max_tokens=1000,
+#         temperature=0.7,
+#         system=summary_prompt,
+#         messages=[
+#             {"role": "user", "content": summary_request}
+#         ]
+#     )
+    
+#     return message.content
+
 def create_summary_markdown(topic, summary):
     return f"# Summary of Research on {topic}\n\n{summary}"
 
@@ -99,7 +117,7 @@ def main():
             mime="text/markdown"
         )
         
-        st.markdown("## Summary")
+        st.markdown("\n\n##Summary")
         st.markdown(summary_result)
         st.download_button(
             "Download Summary", 
