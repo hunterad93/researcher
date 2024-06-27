@@ -1,0 +1,17 @@
+*.pdf
+*.md
+*.toml
+.DS_Store
+*.txt
+*.html
+*.json
+*.csv
+*.xlsx
+*.xls
+*.jsonl
+*.pkl
+*.ipynb
+*.env
+*.tsv
+*.pyc
+!requirements.txt
