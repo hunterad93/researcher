@@ -1,7 +1,7 @@
 import re
 import streamlit as st
 import requests
-# import anthropic
+import anthropic
 from openai import OpenAI
 
 
