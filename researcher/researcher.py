@@ -1,7 +1,7 @@
 import re
 import streamlit as st
 import requests
-import anthropic
+# import anthropic
 from openai import OpenAI
 
 
@@ -59,8 +59,8 @@ def research_topic(main_topic, max_subtopics=10):
     markdown_doc = create_markdown_document(main_topic, detailed_research)
     
     # Step 5: Generate summary
-    summary_prompt = "Summarize the given information concisely. Focus on key points and maintain a neutral, academic tone."
-    summary = generate_summary_openai(detailed_research, summary_prompt)
+    summary_prompt = "Be precise and concise."
+    summary = generate_summary(detailed_research, summary_prompt, main_topic)
     summary_markdown = create_summary_markdown(main_topic, summary)
     
     return markdown_doc, summary_markdown
@@ -76,9 +76,14 @@ def create_markdown_document(topic, research_data):
     
     return markdown
 
-def generate_summary(research_data, summary_prompt):
-    summary_request = "Summarize the following research information concisely:\n\n" + "\n\n".join(research_data)
-    summary = send_perplexity_message(summary_request, [], model="llama-3-sonar-large-32k-chat", system_prompt=summary_prompt)
+def generate_summary(research_data, summary_prompt, main_topic):
+    summary_request = f"Can you extract the most relevant valuable information from the research that specifically addresses the main topic: '{main_topic}'.\n\n Here is the research:\n\n" + "\n\n".join(research_data)
+    summary = send_perplexity_message(
+        summary_request,
+        [],
+        model="llama-3-sonar-large-32k-chat",
+        system_prompt=summary_prompt
+    )
     return summary
 
 # def generate_summary_claude(research_data, summary_prompt):
@@ -98,12 +103,11 @@ def generate_summary(research_data, summary_prompt):
     
 #     return message.content
 
-def generate_summary_openai(research_data, summary_prompt):
+def generate_summary_openai(research_data, summary_prompt, main_topic):
 
     client = OpenAI(api_key=st.secrets['OPENAI_API_KEY'])
     
-    summary_request = "Summarize the following research information concisely:\n\n" + "\n\n".join(research_data)
-    
+    summary_request = f"Extract the single most relevant point from the research that specifically addresses the main topic: '{main_topic}'.\n\n Here is the research:\n\n" + "\n\n".join(research_data)
     response = client.chat.completions.create(
         model="gpt-4-turbo-2024-04-09",
         messages=[
