@@ -38,7 +38,7 @@ def send_perplexity_message(message, conversation_history, model="llama-3-sonar-
 
 
 def generate_subquestions(main_question):
-    prompt = f"Given the main question '{main_question}', provide three specific subquestions that will help answer the main question. Format the response as a numbered list."
+    prompt = f"Given the question '{main_question}', provide three google search queries that will shed light on the question. Format the response as a numbered list."
     
     response = send_perplexity_message(
         prompt,
@@ -48,25 +48,30 @@ def generate_subquestions(main_question):
     )
     
     # Use regex to find numbered items
-    subquestions = re.findall(r'\d+\.\s*(.*)', response)
-    return subquestions
+    subqueries = re.findall(r'\d+\.\s*(.*)', response)
+    
+    # If no numbered items found, return the whole response as a single subquestion
+    if not subqueries:
+        return [response.strip()]
+    
+    return subqueries
 
-def research_subquestion(subquestion):
-    research_prompt = f"Provide a concise answer to the following question: {subquestion}"
+def research_subquestion(subquery):
+    research_prompt = f"Research the following google search query: {subquery}"
     
     response = send_perplexity_message(
         research_prompt,
         [],
         model="llama-3-sonar-large-32k-online",
-        system_prompt="Provide a concise and precise answer. Conclude your response with a list of URLS used in the search."
+        system_prompt="Provide a concise and response. Include relevant facts, examples, and explanations."
     )
     
     return response
 
-def summarize_research(main_question, subquestions, answers):
+def summarize_research(main_question, subqueries, answers):
     summary_prompt = f"Summarize the following research to answer the main question: '{main_question}'\n\n"
-    for q, a in zip(subquestions, answers):
-        summary_prompt += f"Subquestion: {q}\nAnswer: {a}\n\n"
+    for q, a in zip(subqueries, answers):
+        summary_prompt += f"Subquery: {q}\nAnswer: {a}\n\n"
     summary_prompt += "Provide a concise summary that addresses the main question based on this research."
     
     summary = send_perplexity_message(
@@ -119,19 +124,19 @@ def main():
         try:
             with st.spinner("Researching..."):
                 # Generate subquestions
-                subquestions = generate_subquestions(main_question)
+                subqueries = generate_subquestions(main_question)
                 
                 # Research each subquestion
                 answers = []
-                for i, subq in enumerate(subquestions, 1):
-                    st.text(f"Researching subquestion {i}...")
+                for i, subq in enumerate(subqueries, 1):
+                    st.text(f"Researching subquery {i}...")
                     answer = research_subquestion(subq)
                     answers.append(answer)
                 
                 # Summarize the research
-                summary = summarize_research(main_question, subquestions, answers)
+                summary = summarize_research(main_question, subqueries, answers)
                 
-                st.session_state.research_results = list(zip(subquestions, answers))
+                st.session_state.research_results = list(zip(subqueries, answers))
                 st.session_state.summary = summary
         except Exception as e:
             st.error(f"An error occurred during research: {str(e)}")
@@ -140,14 +145,14 @@ def main():
     if st.session_state.research_results:
         st.markdown("## Research Results")
         for i, (subq, answer) in enumerate(st.session_state.research_results, 1):
-            st.markdown(f"### Subquestion {i}: {subq}")
+            st.markdown(f"### Subquery {i}: {subq}")
             st.markdown(answer)
         
         st.markdown("## Summary")
         st.markdown(st.session_state.summary)
         
         # Create PDF for full research
-        research_content = "# Research Results\n\n" + "\n\n".join([f"## Subquestion: {subq}\n\n{answer}" for subq, answer in st.session_state.research_results])
+        research_content = "# Research Results\n\n" + "\n\n".join([f"## Subquery: {subq}\n\n{answer}" for subq, answer in st.session_state.research_results])
         research_pdf = markdown_to_pdf(research_content)
         st.download_button(
             "Download Full Research (PDF)", 

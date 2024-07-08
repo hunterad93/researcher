@@ -41,10 +41,10 @@ def extract_subtopics(text):
 
 def research_topic(main_topic, max_subtopics=10):
     conversation_history = []
-    research_prompt = "Try to be specific in your responses. Conclude your response with a list of URLs used from your search."
+    research_prompt = "Conclude your response with a list of URLs used from your search."
     
     # Step 1: Get overview
-    overview = send_perplexity_message(f"Provide an overview of {main_topic} with a numbered list of subtopics.", conversation_history, system_prompt=research_prompt)
+    overview = send_perplexity_message(f"Provide an overview of {main_topic} with a numbered list of around 5 subtopics.", conversation_history, system_prompt=research_prompt)
     
     # Step 2: Extract subtopics
     subtopics = extract_subtopics(overview)[:max_subtopics]
@@ -81,7 +81,7 @@ def generate_summary(research_data, summary_prompt, main_topic):
     summary = send_perplexity_message(
         summary_request,
         [],
-        model="llama-3-sonar-large-32k-chat",
+        model="llama-3-70b-instruct",
         system_prompt=summary_prompt
     )
     return summary

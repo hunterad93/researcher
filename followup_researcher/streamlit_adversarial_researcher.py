@@ -8,7 +8,7 @@ OFFLINE_SYSTEM_PROMPT = """You are an AI assistant who is trying to get specific
 from a conversation partner who is connected to the internet. Your **ONLY** concern is the accuracy of the data, because 
 you are investigating on behalf of advertisers who are paying for the data."""
 
-SUMMARY_PROMPT = "Be precise and concise. Only provide the summary, without any additional context or explanation."
+SUMMARY_PROMPT = "Be precise and concise. Only provide the summary, without restating the question, or giving additional context or explanation."
 
 
 def send_perplexity_message(conversation_history, model, system_prompt):
