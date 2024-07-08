@@ -8,7 +8,7 @@ OFFLINE_SYSTEM_PROMPT = """You are an AI assistant who is trying to get specific
 from a conversation partner who is connected to the internet. Your **ONLY** concern is the accuracy of the data, because 
 you are investigating on behalf of advertisers who are paying for the data."""
 
-SUMMARY_PROMPT = "Be precise and concise. Only provide the summary, without restating the question, or giving additional context or explanation."
+SUMMARY_PROMPT = "Be precise and concise. Only provide the summary, without restating the question, or giving additional context or explanation. Make the summary sound like a natural, human explanation rather than a marketing spiel."    
 
 
 def send_perplexity_message(conversation_history, model, system_prompt):
@@ -96,9 +96,9 @@ def create_markdown_document(initial_prompt, conversation_history):
 def main():
     st.title("Adversarial Research Agent")
     
-    domain = st.text_input("Enter the data provider domain (e.g. lotame.com):")
-    data_type = st.text_input("Enter the data type (e.g. behavioral):")
-    num_iterations = st.slider("Number of follow-up questions:", 1, 5, 5)
+    domain = st.text_input("Enter the data provider domain (e.g. lotame.com, acxiom.com):")
+    data_type = st.text_input("Enter the data type (e.g. behavioral, demographic, etc.):")
+    num_iterations = st.slider("Number of follow-up questions:", 1, 5, 3)
     
     if st.button("Get Answer"):
         with st.spinner("Processing..."):
