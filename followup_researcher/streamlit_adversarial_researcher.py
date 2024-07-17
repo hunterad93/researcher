@@ -81,38 +81,48 @@ def summarize_conversation(initial_prompt, conversation_history):
     
     summary = send_perplexity_message([{"role": "user", "content": summary_prompt}], "llama-3-sonar-large-32k-chat", SUMMARY_PROMPT)
     return summary
+
 def create_markdown_document(initial_prompt, conversation_history):
-    markdown = f"# Adversarial conversation on Question: {initial_prompt}\n\n"
+    # Generate summary first
+    summary = summarize_conversation(initial_prompt, conversation_history)
+    
+    # Create markdown document with summary at the top
+    markdown = f"## Summary for Advertisers\n\n{summary}\n\n"
+    markdown += "## LLM Research Conversation\n\n"
+    
     for message in conversation_history:
         role = "Online Model" if message["role"] == "assistant" else "Offline Model"
-        markdown += f"## {role}\n\n{message['content']}\n\n"
-    
-    # Add summary section
-    summary = summarize_conversation(initial_prompt, conversation_history)
-    markdown += f"## Summary for Advertisers\n\n{summary}\n"
+        markdown += f"### {role}\n\n{message['content']}\n\n"
     
     return markdown
 
 def main():
-    st.title("Adversarial Research Agent")
+    st.title("Data Broker Research")
     
-    domain = st.text_input("Enter the data provider domain (e.g. lotame.com, acxiom.com):")
-    data_type = st.text_input("Enter the data type (e.g. behavioral, demographic, etc.):")
-    num_iterations = st.slider("Number of follow-up questions:", 1, 5, 3)
+    # Initialize session state
+    if 'qa_result' not in st.session_state:
+        st.session_state.qa_result = None
+    if 'summary' not in st.session_state:
+        st.session_state.summary = None
+
+    domain = st.text_input("Enter the data provider name (e.g. Acxiom, Lotame, etc.):")
+    data_type = st.text_input("Enter the data category (e.g. behavioral, demographic) or segment (e.g. 'coffee drinker enthusiast', 'traveler', etc.):")
+    num_iterations = 3
     
     if st.button("Get Answer"):
         with st.spinner("Processing..."):
             conversation_history, initial_prompt = create_conversation(domain, data_type, num_iterations)
-            qa_result = create_markdown_document(initial_prompt, conversation_history)
-        
-        st.markdown("## Question-Answer Conversation")
-        st.markdown(qa_result)
-        st.download_button(
-            "Download Q&A Conversation", 
-            qa_result, 
-            file_name="question_answer_conversation.md",
-            mime="text/markdown"
-        )
+            st.session_state.qa_result = create_markdown_document(initial_prompt, conversation_history)
+            st.session_state.summary = summarize_conversation(initial_prompt, conversation_history)
+    
+    # Display results if they exist
+    if st.session_state.summary:
+        st.markdown("## Summary for Advertisers")
+        st.markdown(st.session_state.summary)
+    
+    if st.session_state.qa_result:
+        st.markdown("## Detailed Question-Answer Conversation")
+        st.markdown(st.session_state.qa_result)
 
 if __name__ == "__main__":
     main()
