@@ -1,5 +1,7 @@
 import streamlit as st
 import requests
+from pinecone_utils import get_cached_summary, cache_summary
+
 
 # Constants for system prompts
 ONLINE_SYSTEM_PROMPT = """Act as an advocate for the company you are asked about. Conclude your response with a list of URLS used from your search."""
@@ -104,24 +106,47 @@ def main():
         st.session_state.qa_result = None
     if 'summary' not in st.session_state:
         st.session_state.summary = None
+    if 'cached_summary' not in st.session_state:
+        st.session_state.cached_summary = None
+    if 'show_regenerate' not in st.session_state:
+        st.session_state.show_regenerate = False
 
     domain = st.text_input("Enter the data provider name (e.g. Acxiom, Lotame, etc.):")
     data_type = st.text_input("Enter the data category (e.g. behavioral, demographic) or segment (e.g. 'coffee drinker enthusiast', 'traveler', etc.):")
     num_iterations = 3
     
-    if st.button("Get Answer"):
-        with st.spinner("Processing..."):
-            conversation_history, initial_prompt = create_conversation(domain, data_type, num_iterations)
-            st.session_state.qa_result = create_markdown_document(initial_prompt, conversation_history)
-            st.session_state.summary = summarize_conversation(initial_prompt, conversation_history)
+    initial_prompt = f"Answer this question: how does {domain} collect {data_type} data that it sells to advertisers?"
     
-    # Display results if they exist
-    if st.session_state.summary:
-        st.markdown("## Summary for Advertisers")
-        st.markdown(st.session_state.summary)
+    if st.button("Research"):
+        st.session_state.show_regenerate = False
+        cached_summary = get_cached_summary(initial_prompt)
+        
+        if cached_summary:
+            st.session_state.summary = cached_summary['summary']
+            st.session_state.qa_result = None
+            st.session_state.show_regenerate = True
+            st.info("Displaying cached summary. Click 'Generate New Research' for fresh results and full research document.")
+            st.markdown(st.session_state.summary)
+        else:
+            with st.spinner("Processing..."):
+                conversation_history, _ = create_conversation(domain, data_type, num_iterations)
+                st.session_state.qa_result = create_markdown_document(initial_prompt, conversation_history)
+                st.session_state.summary = summarize_conversation(initial_prompt, conversation_history)
+                # Cache the new summary
+                cache_summary(domain, data_type, initial_prompt, st.session_state.summary)
+
+    if st.session_state.show_regenerate:
+        if st.button("Generate New Research"):
+            with st.spinner("Processing..."):
+                conversation_history, _ = create_conversation(domain, data_type, num_iterations)
+                st.session_state.qa_result = create_markdown_document(initial_prompt, conversation_history)
+                st.session_state.summary = summarize_conversation(initial_prompt, conversation_history)
+                # Cache the new summary
+                cache_summary(domain, data_type, initial_prompt, st.session_state.summary)
+            st.session_state.show_regenerate = False
+
     
     if st.session_state.qa_result:
-        st.markdown("## Detailed Question-Answer Conversation")
         st.markdown(st.session_state.qa_result)
 
 if __name__ == "__main__":
