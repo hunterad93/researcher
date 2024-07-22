@@ -100,6 +100,11 @@ def create_markdown_document(initial_prompt, conversation_history):
 
 def main():
     st.title("Data Broker Research")
+
+    password = st.text_input("Enter password:", type="password")
+    if password != st.secrets["app_password"]:  # Ensure this key exists in your secrets
+        st.error("Incorrect password. Please try again.")
+        return  # Exit the main function if the password is incorrect
     
     # Initialize session state
     if 'qa_result' not in st.session_state:
