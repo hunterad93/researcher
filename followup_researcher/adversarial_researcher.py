@@ -47,8 +47,8 @@ def send_perplexity_message(conversation_history, model, system_prompt):
         return "Error: Unable to get a response from the LLM"
 
 def create_conversation(domain, data_type, num_iterations):
-    online_model = "llama-3-sonar-large-32k-online"
-    offline_model = "llama-3-sonar-large-32k-chat"
+    online_model = "llama-3.1-sonar-large-128k-online"
+    offline_model = "llama-3.1-sonar-large-128k-chat"
     
     online_conversation = []
     offline_conversation = []
