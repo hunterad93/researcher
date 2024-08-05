@@ -116,8 +116,8 @@ def main():
     if 'show_regenerate' not in st.session_state:
         st.session_state.show_regenerate = False
 
-    domain = st.text_input("Enter the data provider name (e.g. Acxiom, Lotame, etc.):")
-    data_type = st.text_input("Enter the data category (e.g. behavioral, demographic) or segment (e.g. 'coffee drinker enthusiast', 'traveler', etc.):")
+    domain = st.text_input("Enter the data provider name (e.g. Acxiom, Lotame, Oracle, Ameribase, Skydeo etc.):")
+    data_type = st.text_input("Enter the data category (e.g. behavioral, demographic) or segment (e.g. coffee drinker enthusiast, frequent traveler, etc.):")
     num_iterations = 3
     
     initial_prompt = f"Answer this question: how does {domain} collect {data_type} data that it sells to advertisers?"
